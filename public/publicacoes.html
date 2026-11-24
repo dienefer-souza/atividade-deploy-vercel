@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Document</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 0 20px;
+      background-color: #f2f2f2;
+    }
+
+    h1 {
+      text-align: center;
+    }
+
+    .criar-publicacao {
+      background-color: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+      border: 1px solid #e5e5e5;
+      margin-bottom: 25px;
+    }
+
+    .publicacao {
+      background-color: white;
+      padding: 20px;
+      margin-top: 18px;
+      border-radius: 12px;
+      box-shadow: 0 3px 10px rgba(0, 0, 0, 0.12);
+      border: 1px solid #e5e5e5;
+    }
+
+    .usuario {
+      font-weight: bold;
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+
+    .texto-post {
+      margin: 0 0 12px 0;
+      font-size: 16px;
+      line-height: 1.5;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 8px;
+    }
+
+    select,
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    #texto {
+      width: 100%;
+      min-height: 100px;
+      box-sizing: border-box;
+      padding: 12px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      font-family: Arial, sans-serif;
+      resize: vertical;
+    }
+
+    button {
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-right: 8px;
+    }
+
+    button:hover {
+      opacity: 0.85;
+    }
+
+    .btn-editar {
+      background-color: #3498db;
+      color: white;
+    }
+
+    .btn-excluir {
+      background-color: #e74c3c;
+      color: white;
+    }
+
+    .btn-enviar {
+      width: 100%;
+      background-color: #2ecc71;
+      color: white;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="criar-publicacao">
+    <h2>CRIAR PUBLICAÇÃO</h2>
+    <label for="Pessoas">Escolha um usuário:</label>
+    <select id="Pessoas" nome="Pessoas"></select>
+    <textarea id="texto" placeholder="O que você está pensando?"></textarea>
+    <button class="btn-enviar" onclick="enviar()">ENVIAR</button>
+  </div>
+  <h2>PUBLICAÇÕES RECENTES</h2>
+    <div id="posts"></div>
+    <br>
+    <a href="index.html">← Voltar para a página inicial</a>
+</body>
+<script>
+  async function puxaDados() {
+
+    let url = "http://127.0.0.1:3000/pessoas";
+
+    let respReq = await fetch(url);
+    let dadosJson = await respReq.json();
+    console.log(dadosJson); let select = document.querySelector("#Pessoas");
+    Object.keys(dadosJson).forEach((i) => {
+      let option = document.createElement("option");
+      option.value = dadosJson[i].id; option.textContent = dadosJson[i].nome;
+      select.appendChild(option);
+    });
+  } puxaDados();
+
+  async function enviar() {
+    let select = document.querySelector("#Pessoas");
+
+    let idUsuario = select.value;
+    let usuario = select.options[select.selectedIndex].textContent;
+    let post = document.querySelector("#texto").value;
+
+    if (post.trim() === "") {
+      alert("Digite alguma coisa antes de publicar!");
+      return;
+    }
+
+    let url = "http://127.0.0.1:3000/cadastro-post";
+
+    let dadosPost = {
+      usuario: usuario,
+      idUsuario: idUsuario,
+      post: post
+    };
+
+    let requisicao = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(dadosPost),
+    });
+
+    let resposta = await requisicao.json();
+
+    console.log(resposta);
+
+    document.querySelector("#texto").value = "";
+
+    let divPosts = document.querySelector("#posts");
+
+    divPosts.innerHTML = "";
+
+    puxaPosts();
+  }
+
+
+
+  async function puxaPosts() {
+    let url = "http://127.0.0.1:3000/posts";
+
+    let respReq = await fetch(url);
+
+    let dadosJson = await respReq.json();
+
+    console.log(dadosJson);
+
+    let divPosts = document.querySelector("#posts");
+
+    for (let i = 0; i < dadosJson.length; i++) {
+      let data = new Date(dadosJson[i].createdAt);
+
+      let dataFormatada =
+        data.toLocaleDateString("pt-BR") +
+        " às " +
+        data.toLocaleTimeString("pt-BR", {
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+      divPosts.innerHTML +=
+        '<div class="publicacao">' +
+        '<div class="usuario">' +
+        dadosJson[i].usuario +
+        '</div>' +
+        '<p class="texto-post">' +
+        dadosJson[i].post +
+        '</p>' +
+        '<small>' +
+        dataFormatada +
+        '</small>' +
+        '<br><br>' +
+        '<button class="btn-editar" onclick="editarPost(' + dadosJson[i].id + ')">EDITAR</button>' +
+        '<button class="btn-excluir" onclick="excluirPost(' + dadosJson[i].id + ')">EXCLUIR</button>' +
+        '</div>';
+    }
+  }
+
+  async function editarPost(id) {
+    let novoTexto = prompt("Digite o novo texto da publicação:");
+
+    if (novoTexto === null) {
+      return;
+    }
+
+    if (novoTexto.trim() === "") {
+      alert("A publicação não pode ficar vazia!");
+      return;
+    }
+
+    let url = "http://127.0.0.1:3000/posts/" + id;
+
+    let requisicao = await fetch(url, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        post: novoTexto
+      })
+    });
+
+    let resposta = await requisicao.json();
+
+    console.log(resposta);
+
+    let divPosts = document.querySelector("#posts");
+
+    divPosts.innerHTML = "";
+
+    puxaPosts();
+  }
+
+  async function excluirPost(id) {
+    let confirmar = confirm("Tem certeza que deseja excluir esta publicação?");
+
+    if (!confirmar) {
+      return;
+    }
+
+    let url = "http://127.0.0.1:3000/posts/" + id;
+
+    let requisicao = await fetch(url, {
+      method: "DELETE"
+    });
+
+    let resposta = await requisicao.json();
+
+    console.log(resposta);
+
+    let divPosts = document.querySelector("#posts");
+
+    divPosts.innerHTML = "";
+
+    puxaPosts();
+  }
+
+  puxaPosts();
+</script>
+
+</html>
