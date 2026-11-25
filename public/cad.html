@@ -1,114 +1,123 @@
 <!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Document</title>
-</head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f2f2f2;
+      margin: 0;
+      padding: 40px;
+    }
 
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background-color: #f2f2f2;
-    margin: 0;
-    padding: 40px;
-  }
+    h1 {
+      text-align: center;
+      color: #333;
+      margin-bottom: 30px;
+    }
 
-  h1 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 30px;
-  }
+    .cadastro {
+      max-width: 450px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
 
-  .cadastro {
-    max-width: 450px;
-    margin: 0 auto;
-    background-color: white;
-    padding: 30px;
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
+    label {
+      display: block;
+      margin-bottom: 6px;
+      font-weight: bold;
+      color: #333;
+    }
 
-  label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: bold;
-    color: #333;
-  }
+    input {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 10px;
+      margin-bottom: 18px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      font-size: 15px;
+    }
 
-  input {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 10px;
-    margin-bottom: 18px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 15px;
-  }
+    button {
+      width: 100%;
+      padding: 11px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      cursor: pointer;
+    }
 
-  button {
-    width: 100%;
-    padding: 11px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 15px;
-    cursor: pointer;
-  }
+    button:hover {
+      background-color: #0056b3;
+    }
 
-  button:hover {
-    background-color: #0056b3;
-  }
+    .links {
+      text-align: center;
+      margin-top: 20px;
+    }
 
-  .links {
-    text-align: center;
-    margin-top: 20px;
-  }
+    .links a {
+      display: inline-block;
+      margin: 6px;
+      color: #007bff;
+      text-decoration: none;
+    }
 
-  .links a {
-    display: inline-block;
-    margin: 6px;
-    color: #007bff;
-    text-decoration: none;
-  }
+    .links a:hover {
+      text-decoration: underline;
+    }
+  </style>
 
-  .links a:hover {
-    text-decoration: underline;
-  }
-</style>
-
-<body>
-  <h1>CADASTRO</h1>
-  <div class="cadastro">
-    <label for="nome">Nome:</label>
-    <input type="text" id="nome">
-    <label for="turma">Turma:</label>
-    <input type="text" id="turma">
-    <button onclick="cadastrar()">ENVIAR</button>
-    <div class="links">
-      <a href="pessoas.html">VER CADASTROS</a>
-      <a href="index.html">← Voltar para a página inicial</a>
+  <body>
+    <h1>CADASTRO</h1>
+    <div class="cadastro">
+      <label for="nome">Nome:</label>
+      <input type="text" id="nome" />
+      <label for="turma">Turma:</label>
+      <input type="text" id="turma" />
+      <button onclick="cadastrar()">ENVIAR</button>
+      <div class="links">
+        <a href="pessoas.html">VER CADASTROS</a>
+        <a href="index.html">← Voltar para a página inicial</a>
+      </div>
     </div>
-  </div>
-</body>
-<script>
-  async function cadastrar() {
-    console.log("clicou");
-    let nome = document.querySelector("#nome").value;
-    let turma = document.querySelector("#turma").value;
-    console.log(nome);
-    console.log(turma);
-    let url = "http://127.0.0.1:3000/cadastro";
-    let pessoa = { nome: nome, turma: turma };
-    console.log(pessoa);
-    let respReq = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(pessoa),
-    });
-  }
-</script>
+  </body>
+  <script>
+    async function cadastrar() {
+      let nome = document.querySelector("#nome").value;
+      let turma = document.querySelector("#turma").value;
 
+      if (nome.trim() === "" || turma.trim() === "") {
+        alert("Preencha o nome e a turma antes de enviar!");
+        return;
+      }
+
+      let url = "/cadastro";
+      let pessoa = { nome: nome, turma: turma };
+
+      let respReq = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(pessoa),
+      });
+
+      if (respReq.ok) {
+        alert("Cadastrado com sucesso!");
+        document.querySelector("#nome").value = "";
+        document.querySelector("#turma").value = "";
+      } else {
+        alert("Erro ao cadastrar. Tente novamente.");
+      }
+    }
+  </script>
 </html>

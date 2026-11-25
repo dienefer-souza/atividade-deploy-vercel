@@ -2,6 +2,7 @@ const express = require("express");
 const app = express();
 const PORT = 3000;
 const path = require("path");
+const fs = require("fs");
 const sqlite3 = require("sqlite3");
 const { Sequelize, DataTypes } = require("sequelize");
 
@@ -9,10 +10,19 @@ const { Sequelize, DataTypes } = require("sequelize");
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
-// Usa a pasta /tmp na Vercel (única pasta com permissão de escrita na nuvem)
-const dbPath = process.env.VERCEL
-  ? "/tmp/database.sqlite"
-  : "./database.sqlite";
+// Copia o banco local (com os dados já salvos) para /tmp na Vercel
+const localDbPath = path.join(__dirname, "database.sqlite");
+const vercelDbPath = "/tmp/database.sqlite";
+
+if (
+  process.env.VERCEL &&
+  fs.existsSync(localDbPath) &&
+  !fs.existsSync(vercelDbPath)
+) {
+  fs.copyFileSync(localDbPath, vercelDbPath);
+}
+
+const dbPath = process.env.VERCEL ? vercelDbPath : localDbPath;
 
 const sequelize = new Sequelize({
   dialect: "sqlite",
